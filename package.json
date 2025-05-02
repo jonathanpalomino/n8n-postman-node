@@ -1,0 +1,32 @@
+{
+  "name": "n8n-postman-node",
+  "version": "1.0.0",
+  "description": "Convertidor de postman collection a nodo n8n http",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "npx ts-node ./src/index.ts",
+    "comparate": "npx ts-node ./src/comparator.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jonathanpalomino/n8n-postman-node.git"
+  },
+  "author": "Jonathan Palomino",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/jonathanpalomino/n8n-postman-node/issues"
+  },
+  "homepage": "https://github.com/jonathanpalomino/n8n-postman-node#readme",
+  "dependencies": {
+    "n8n-postman-node": "file:",
+    "n8n-workflow": "^1.82.0",
+    "postman-collection": "^5.0.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3",
+    "uuid": "^11.1.0"
+  },
+  "devDependencies": {
+    "@types/postman-collection": "^3.5.10"
+  }
+}
