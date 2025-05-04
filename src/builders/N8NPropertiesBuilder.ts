@@ -4,7 +4,8 @@ import { RequestProperties } from '../models/RequestProperties';
 import { AuthProperties } from '../models/AuthProperties';
 import { v4 as uuidv4 } from 'uuid';
 import { N8NConfigNode } from '../config/N8NConfigNode';
-import { INode, INodeCredentialsDetails, INodeParameters, IWorkflowBase } from 'n8n-workflow';
+import { IConnection, IConnections, INode, INodeCredentialsDetails, INodeParameters, IWorkflowBase, NodeConnectionType } from 'n8n-workflow';
+import { INodeExt } from '../models/INodeExt';
 
 export class N8NPropertiesBuilder {
     private collection: Collection;
@@ -39,7 +40,7 @@ export class N8NPropertiesBuilder {
         config = config ?? new N8NConfigNode(); // Si config es null o undefined, se instancia
         const httpNode = this.createEmptyHttpNode();
         const { parameters } = httpNode;
-        
+
         httpNode.type = 'n8n-nodes-base.httpRequest';
         httpNode.typeVersion = 4.2;
         httpNode.name = this.generateName(request, config.positionsPath);
@@ -69,9 +70,9 @@ export class N8NPropertiesBuilder {
                     }
                 }
             };
-        } 
+        }
     }
-    
+
 
     private handlePostMethod(request: RequestProperties, parameters: INodeParameters) {
         if (request.method === 'POST') {
@@ -124,64 +125,97 @@ export class N8NPropertiesBuilder {
         let finalName = param.name;
         const paramVariables = param.pathParameters;
         let prefixName = '';
-    
+
+        if (posiciones.length == 0) {
+            const long = paramVariables.length;
+            posiciones = [long - 1];
+        }
+
         posiciones.forEach(element => {
             const variable = paramVariables[element];
             if (variable?.key) {
                 prefixName += `${variable.key}-`;
             }
         });
-    
+
         if (prefixName.length > 0) {
-            finalName = `[${prefixName.slice(0, -1)}] ${finalName}`;
+            finalName = `${finalName} [${prefixName.slice(0, -1)}]`;
         }
-    
+
         return finalName;
     }
-    
+
     createEmptyHttpNode(): INode {
         return {
             parameters: {
                 url: '',
-                method:''
+                method: ''
             },
             type: '',
             typeVersion: 0,
-            position: [0,0],
+            position: [0, 0],
             id: '',
             name: ''
         };
     }
 
-    createEmptyCollection(id: string,name:string): IWorkflowBase {
+    createEmptyNode(): INode {
         return {
-            id : id,
-            name : name,
+            parameters: {},
+            type: '',
+            typeVersion: 0,
+            position: [0, 0],
+            id: uuidv4(),
+            name: ''
+        };
+    }
+
+    createEmptyCollection(id: string, name: string): IWorkflowBase {
+        return {
+            id: id,
+            name: name,
             active: true,
             createdAt: new Date(),
             updatedAt: new Date(),
             nodes: [],
-            connections :{}
+            connections: {}
         }
     }
 
-    /*createVinculation(argumento: NodeConnection) {
-        const vinculos: NodeConnection = {
-            node: argumento.node,
-            type: argumento.type,
-            index: argumento.index
-        };
-        return vinculos;
-    }
+    estableceConexion(...nodes: INodeExt[]): IConnections {
+        const connections: IConnections = {};
 
-    createEmptyNodeMerge() {
-        const vinculos: NodeConnection[] = [];
-        return vinculos;
-    }
+        for (let i = 0; i < nodes.length; i++) {
+            const currentNode = nodes[i];
+            const nextNode = nodes[i + 1];
 
-    instanciaConexiones(coleccion: PrincipalNode, vinculos: NodeConnection[], dynamicKey: string) {
-        coleccion.connections ??= {};
-        coleccion.connections[dynamicKey] ??= { main: [] };
-        coleccion.connections[dynamicKey]!.main = [vinculos];
-    }*/
+            let mainConnections: IConnection[] = [];
+            if(nextNode !==undefined){
+                mainConnections = [
+                    {
+                        node: nextNode.name,
+                        type: 'main' as NodeConnectionType,
+                        index: i,
+                    },
+                ];
+            }
+
+            // Si el nodo tiene hijos, agregarlos al mismo nivel
+            if (currentNode.hijos?.length) {
+                const hijosConnections = currentNode.hijos.map(hijo => ({
+                    node: hijo.name,
+                    type: 'main' as NodeConnectionType,
+                    index: 0,
+                }));
+
+                mainConnections.push(...hijosConnections);
+            }
+
+            connections[currentNode.name] = {
+                main: [mainConnections],
+            };
+        }
+
+        return connections;
+    }
 }

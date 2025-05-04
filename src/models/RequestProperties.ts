@@ -23,7 +23,6 @@ export class RequestProperties {
         this.createVariables = true;
         this.name = item.name;
         this.method = item.request.method;
-        console.log(this.method);
         this.headers = this.extractHeadersParameters(item.request.headers)
         this.pathParameters = this.extractPathParameters(item.request.url);
         this.queryParameters = this.extractQueryParameters(item.request.url);
@@ -76,7 +75,6 @@ export class RequestProperties {
             ? url.query
                 .map(queryParam => {
                     const param = new QueryParameterProperties(queryParam);
-                    //return `${param.key}=${param.value}`;
                     return `${param.key}${param.value.startsWith('=') ? '' : '='}${param.value}`;
 
                 })
@@ -89,7 +87,6 @@ export class RequestProperties {
         const headersParams: HeaderProperties[] = [];
         if(headers){
             headers.each(param=>{
-                let value = param.value;
                 headersParams.push(new HeaderProperties(param));
             });
         }

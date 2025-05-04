@@ -4,7 +4,6 @@
   "description": "Convertidor de postman collection a nodo n8n http",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "start": "npx ts-node ./src/index.ts",
     "comparate": "npx ts-node ./src/comparator.ts"
   },
